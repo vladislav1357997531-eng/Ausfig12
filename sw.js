@@ -1,5 +1,5 @@
-const CACHE='ausfig12-v5-core-2';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg'];
+const CACHE='ausfig12-v5-core-5';
+const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./argon2-bundled.min.js'];
 self.addEventListener('install',e=>e.waitUntil((async()=>{
   const c=await caches.open(CACHE);
   await c.addAll(ASSETS);

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b10">
+<title>Ausfig12</title>
+<style>
+:root{color-scheme:dark;--bg:#090b10;--panel:#11151d;--panel2:#0d1118;--line:#252b36;--text:#f5f7fa;--muted:#8f98a8;--accent:#caff3d;--bad:#ff8795}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;background:radial-gradient(circle at 90% -10%,rgba(202,255,61,.11),transparent 34rem),var(--bg)}
+.app{width:min(680px,100%);margin:auto;padding:calc(18px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.brand{display:flex;align-items:center;gap:10px}.logo{width:42px;height:42px;border:1px solid rgba(202,255,61,.35);border-radius:13px;display:grid;place-items:center;color:var(--accent);font-weight:900}.name{font-weight:900;font-size:20px;letter-spacing:-.03em}.offline{font-size:11px;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#0c1016;border:1px solid var(--line);padding:5px;border-radius:16px;margin-bottom:12px}.tab{border:0;background:transparent;color:var(--muted);padding:13px 8px;border-radius:12px;font-weight:800;cursor:pointer}.tab.active{background:#171c25;color:var(--text)}
+.card{background:linear-gradient(180deg,#121722,#0e131b);border:1px solid var(--line);border-radius:20px;padding:15px;margin-bottom:12px}.label{font-size:12px;font-weight:800;margin:0 0 8px;display:block;color:#dfe4eb}.field{width:100%;border:1px solid #2a313d;background:#090e15;color:var(--text);outline:none;border-radius:14px;padding:14px;font:inherit}.field:focus{border-color:rgba(202,255,61,.55);box-shadow:0 0 0 3px rgba(202,255,61,.07)}textarea.field{min-height:165px;resize:vertical;line-height:1.5}.result{min-height:180px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+.secret{display:grid;gap:12px}.inputrow{display:flex;gap:8px}.inputrow .field{min-width:0}.eye{width:50px;flex:0 0 50px;border:1px solid var(--line);border-radius:14px;background:#151b24;color:#fff;font-size:18px;cursor:pointer}.pin{letter-spacing:.12em}.hint{font-size:11px;color:var(--muted);margin-top:7px}
+.mainbtn{width:100%;border:0;background:var(--accent);color:#090c10;border-radius:17px;min-height:56px;font-weight:900;font-size:15px;cursor:pointer;margin:2px 0 12px}.mainbtn:disabled{opacity:.55}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.smallbtn{border:1px solid var(--line);background:#151b24;color:#edf1f6;border-radius:13px;min-height:46px;font-weight:800;cursor:pointer}.status{display:none;margin:0 0 12px;padding:12px 14px;border-radius:13px;background:#151a22;color:#dfe4eb;font-size:13px;line-height:1.4}.status.show{display:block}.status.bad{background:#28151a;color:#ffd5da;border:1px solid rgba(255,135,149,.25)}.status.good{background:#152019;color:#dfffc7;border:1px solid rgba(202,255,61,.18)}.hidden{display:none!important}.footer{text-align:center;color:#697384;font-size:11px;padding-top:10px}.busy:after{content:"";display:inline-block;width:14px;height:14px;margin-left:9px;vertical-align:-2px;border:2px solid rgba(0,0,0,.25);border-top-color:#090c10;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:480px){.app{padding-left:11px;padding-right:11px}.card{border-radius:17px}.row{grid-template-columns:1fr}textarea.field{min-height:145px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="logo">A12</div><div><div class="name">Ausfig12</div><div class="offline">Офлайн · один защищённый режим</div></div></div>
+</header>
+
+<div class="tabs">
+  <button id="tabEnc" class="tab active" type="button">Зашифровать</button>
+  <button id="tabDec" class="tab" type="button">Расшифровать</button>
+</div>
+
+<div id="status" class="status"></div>
+
+<section id="encPanel">
+  <div class="card">
+    <label class="label" for="plain">Текст</label>
+    <textarea id="plain" class="field" placeholder="Введите текст…"></textarea>
+  </div>
+  <div class="card secret">
+    <div>
+      <label class="label" for="encWord">Кодовое слово</label>
+      <div class="inputrow"><input id="encWord" class="field" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Ваш секрет"><button class="eye" type="button" data-eye="encWord">◉</button></div>
+    </div>
+    <div>
+      <label class="label" for="encPin">PIN</label>
+      <div class="inputrow"><input id="encPin" class="field pin" type="password" inputmode="numeric" autocomplete="off" placeholder="Только цифры"><button class="eye" type="button" data-eye="encPin">◉</button></div>
+      <div class="hint">Ведущие нули важны: 00123 ≠ 123</div>
+    </div>
+  </div>
+  <button id="encrypt" class="mainbtn" type="button">Зашифровать</button>
+  <div id="encResult" class="card hidden">
+    <label class="label" for="cipherOut">Зашифрованный текст</label>
+    <textarea id="cipherOut" class="field result" readonly></textarea>
+    <div class="row" style="margin-top:9px"><button id="copyCipher" class="smallbtn" type="button">Копировать</button><button id="toDecrypt" class="smallbtn" type="button">Перенести в расшифровку</button></div>
+  </div>
+</section>
+
+<section id="decPanel" class="hidden">
+  <div class="card">
+    <label class="label" for="cipherIn">Зашифрованный текст</label>
+    <textarea id="cipherIn" class="field result" placeholder="Вставьте Ausfig12-текст…"></textarea>
+  </div>
+  <div class="card secret">
+    <div>
+      <label class="label" for="decWord">Кодовое слово</label>
+      <div class="inputrow"><input id="decWord" class="field" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Точный секрет"><button class="eye" type="button" data-eye="decWord">◉</button></div>
+    </div>
+    <div>
+      <label class="label" for="decPin">PIN</label>
+      <div class="inputrow"><input id="decPin" class="field pin" type="password" inputmode="numeric" autocomplete="off" placeholder="Точный PIN"><button class="eye" type="button" data-eye="decPin">◉</button></div>
+    </div>
+  </div>
+  <button id="decrypt" class="mainbtn" type="button">Расшифровать</button>
+  <div id="decResult" class="card hidden">
+    <label class="label" for="plainOut">Расшифрованный текст</label>
+    <textarea id="plainOut" class="field" readonly></textarea>
+    <div class="row" style="margin-top:9px"><button id="copyPlain" class="smallbtn" type="button">Копировать</button><button id="clearPlain" class="smallbtn" type="button">Очистить</button></div>
+  </div>
+</section>
+
+<div class="footer">Ausfig12 Fortress · данные не отправляются в интернет</div>
+<div id="selftest" class="hidden"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var te = new TextEncoder();
+var td = new TextDecoder('utf-8', {fatal:true});
+var MAGIC = new Uint8Array([65,70,49,50]); // AF12
+var VERSION = 2;
+var SUITE = 17; // fixed web suite 0x11
+var HEADER = 88;
+var MAX_TEXT = 8*1024*1024;
+var PBKDF2_ITERATIONS = 600000; // fixed Fortress profile; tuned for mobile browsers
+var MIN_BUCKET = 1024;
+var MIB = 1024*1024;
+var PFX = te.encode('AUSFIG12\0FORTRESS\0V2');
+var INFO_INNER = te.encode('AUSFIG12/V2/INNER/AES256GCM');
+var INFO_OUTER = te.encode('AUSFIG12/V2/OUTER/AES256GCM');
+var SYL_A=['ba','be','bi','bo','da','de','di','do','fa','fe','fi','fo','ga','ge','gi','go'];
+var SYL_B=['la','le','li','lo','ma','me','mi','mo','na','ne','ni','no','ra','re','ri','ro'];
+var SYL_C=['sa','se','si','so','ta','te','ti','to','va','ve','vi','vo','za','ze','zi','zo'];
+var RA={},RB={},RC={};
+for(var i=0;i<16;i++){RA[SYL_A[i]]=i;RB[SYL_B[i]]=i;RC[SYL_C[i]]=i;}
+
+function needCrypto(){
+  if(!window.crypto || !window.crypto.subtle || !window.crypto.getRandomValues){
+    throw new Error('В этом просмотрщике JavaScript-криптография заблокирована. Сохраните файл и откройте его в Chrome, Safari или Firefox.');
+  }
+  return window.crypto.subtle;
+}
+function cat(){var n=0,a=arguments;for(var i=0;i<a.length;i++)n+=a[i].length;var o=new Uint8Array(n),p=0;for(i=0;i<a.length;i++){o.set(a[i],p);p+=a[i].length;}return o;}
+function u32(n){var b=new Uint8Array(4);new DataView(b.buffer).setUint32(0,n>>>0,false);return b;}
+function r32(b,o){return new DataView(b.buffer,b.byteOffset,b.byteLength).getUint32(o,false);}
+function rnd(n){var b=new Uint8Array(n);crypto.getRandomValues(b);return b;}
+function eq(a,b){if(a.length!==b.length)return false;var x=0;for(var i=0;i<a.length;i++)x|=a[i]^b[i];return x===0;}
+function pinOK(p){return typeof p==='string' && /^[0-9]+$/.test(p) && p.length<=4096;}
+function frame(word,pin){if(!word)throw new Error('Введите кодовое слово.');if(!pinOK(pin))throw new Error('PIN должен состоять только из цифр.');var w=te.encode(word.normalize('NFC')),p=te.encode(pin);return cat(PFX,u32(w.length),w,u32(p.length),p);}
+function bucket(n){if(n<MIN_BUCKET)return MIN_BUCKET;if(n<MIB){var x=MIN_BUCKET;while(x<n)x*=2;return x;}return Math.ceil(n/MIB)*MIB;}
+
+var CRC=(function(){var t=new Uint32Array(256);for(var i=0;i<256;i++){var c=i;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[i]=c>>>0;}return t;})();
+function crc32(b){var c=0xFFFFFFFF;for(var i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return u32((c^0xFFFFFFFF)>>>0);}
+
+function word12(v){return SYL_A[(v>>>8)&15]+SYL_B[(v>>>4)&15]+SYL_C[v&15];}
+function linguaEncode(data){var f=cat(u32(data.length),data),words=[],buf=0,bits=0;for(var i=0;i<f.length;i++){buf=buf*256+f[i];bits+=8;while(bits>=12){var sh=bits-12;var v=Math.floor(buf/Math.pow(2,sh))&4095;words.push(word12(v));buf=buf%Math.pow(2,sh);bits-=12;}}if(bits){words.push(word12((buf*Math.pow(2,12-bits))&4095));}var out=[];for(i=0;i<words.length;i+=10)out.push(words.slice(i,i+10).join(' ')+'.');return out.join('\n');}
+function linguaDecode(text){var tokens=String(text).toLowerCase().match(/[a-z]{6}/g);if(!tokens||!tokens.length)throw new Error('Это не Ausfig12-текст.');var bytes=[],buf=0,bits=0;for(var i=0;i<tokens.length;i++){var w=tokens[i],a=RA[w.slice(0,2)],b=RB[w.slice(2,4)],c=RC[w.slice(4,6)];if(a===undefined||b===undefined||c===undefined)throw new Error('Повреждённый Ausfig12-текст.');var v=(a<<8)|(b<<4)|c;buf=buf*4096+v;bits+=12;while(bits>=8){var sh=bits-8;bytes.push(Math.floor(buf/Math.pow(2,sh))&255);buf=buf%Math.pow(2,sh);bits-=8;}}
+  var all=new Uint8Array(bytes);if(all.length<4)throw new Error('Контейнер обрезан.');var n=r32(all,0);if(n>32*1024*1024||all.length<4+n)throw new Error('Контейнер повреждён.');return all.slice(4,4+n);
+}
+
+async function master(secret,salt){var s=needCrypto();var k=await s.importKey('raw',secret,'PBKDF2',false,['deriveBits']);var bits=await s.deriveBits({name:'PBKDF2',hash:'SHA-512',salt:salt,iterations:PBKDF2_ITERATIONS},k,512);return new Uint8Array(bits);}
+async function derive(masterBytes,label,context){var s=needCrypto();var k=await s.importKey('raw',masterBytes,'HKDF',false,['deriveBits']);var bits=await s.deriveBits({name:'HKDF',hash:'SHA-512',salt:context,info:label},k,256);return new Uint8Array(bits);}
+async function aesEnc(keyBytes,iv,data,aad){var s=needCrypto();var k=await s.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt']);return new Uint8Array(await s.encrypt({name:'AES-GCM',iv:iv,additionalData:aad,tagLength:128},k,data));}
+async function aesDec(keyBytes,iv,data,aad){var s=needCrypto();var k=await s.importKey('raw',keyBytes,{name:'AES-GCM'},false,['decrypt']);try{return new Uint8Array(await s.decrypt({name:'AES-GCM',iv:iv,additionalData:aad,tagLength:128},k,data));}catch(e){throw new Error('Неверное кодовое слово/PIN или текст изменён.');}}
+
+function makeHeader(salt,id,n1,n2,bodyLen){var h=new Uint8Array(HEADER);h.set(MAGIC,0);h[4]=VERSION;h[5]=SUITE;h[6]=0;h[7]=0;h.set(salt,8);h.set(id,40);h.set(n1,56);h.set(n2,68);h.set(u32(bodyLen),80);h.set(u32(PBKDF2_ITERATIONS),84);return h;}
+function parseHeader(h){if(h.length!==HEADER)throw new Error('Неверный заголовок.');for(var i=0;i<4;i++)if(h[i]!==MAGIC[i])throw new Error('Это не Ausfig12-текст.');if(h[4]!==VERSION||h[5]!==SUITE)throw new Error('Неподдерживаемая версия Ausfig12.');var body=r32(h,80),it=r32(h,84);if(it!==PBKDF2_ITERATIONS||body<32||body>24*1024*1024)throw new Error('Повреждённый заголовок.');return {salt:h.slice(8,40),id:h.slice(40,56),n1:h.slice(56,68),n2:h.slice(68,80),body:body};}
+
+async function encryptText(message,word,pin){
+  var m=te.encode(String(message));if(!m.length)throw new Error('Введите текст.');if(m.length>MAX_TEXT)throw new Error('Текст слишком большой.');
+  var sf=frame(word,pin),salt=rnd(32),id=rnd(16),n1=rnd(12),n2=rnd(12);
+  var innerHead=cat(new Uint8Array([1,1,0,0]),u32(m.length));
+  var need=innerHead.length+m.length,target=bucket(need),pad=rnd(target-need),payload=cat(innerHead,m,pad);
+  var bodyLen=payload.length+32,h=makeHeader(salt,id,n1,n2,bodyLen),ctx=cat(te.encode('AUSFIG12/V2/CTX'),salt,id);
+  var ms=await master(sf,salt),ki=await derive(ms,INFO_INNER,ctx),ko=await derive(ms,INFO_OUTER,ctx);
+  var c1=await aesEnc(ki,n1,payload,h),c2=await aesEnc(ko,n2,c1,h),transport=cat(h,c2),binary=cat(transport,crc32(transport));
+  sf.fill(0);ms.fill(0);ki.fill(0);ko.fill(0);payload.fill(0);m.fill(0);
+  return linguaEncode(binary);
+}
+async function decryptText(text,word,pin){
+  var bin=linguaDecode(text);if(bin.length<HEADER+4)throw new Error('Контейнер обрезан.');var h=bin.slice(0,HEADER),meta=parseHeader(h);if(bin.length!==HEADER+meta.body+4)throw new Error('Контейнер повреждён.');var body=bin.slice(HEADER,HEADER+meta.body),check=bin.slice(HEADER+meta.body);if(!eq(check,crc32(cat(h,body))))throw new Error('Зашифрованный текст повреждён.');
+  var sf=frame(word,pin),ctx=cat(te.encode('AUSFIG12/V2/CTX'),meta.salt,meta.id),ms=await master(sf,meta.salt),ki=await derive(ms,INFO_INNER,ctx),ko=await derive(ms,INFO_OUTER,ctx);
+  try{var c1=await aesDec(ko,meta.n2,body,h),p=await aesDec(ki,meta.n1,c1,h);if(p.length<8||p[0]!==1||p[1]!==1||p[2]!==0||p[3]!==0)throw new Error('Неверный внутренний формат.');var n=r32(p,4);if(n>MAX_TEXT||8+n>p.length)throw new Error('Неверный размер сообщения.');var msg=p.slice(8,8+n),out;try{out=td.decode(msg);}catch(e){throw new Error('Неверное кодовое слово/PIN или текст повреждён.');}p.fill(0);c1.fill(0);msg.fill(0);return out;}finally{sf.fill(0);ms.fill(0);ki.fill(0);ko.fill(0);}
+}
+
+window.Ausfig12={encrypt:encryptText,decrypt:decryptText};
+
+function $(id){return document.getElementById(id);}var busy=false;
+function setStatus(text,type){var s=$('status');s.textContent=text;s.className='status show '+(type||'');}
+function clearStatus(){$('status').className='status';$('status').textContent='';}
+function tab(which){var enc=which==='enc';$('encPanel').classList.toggle('hidden',!enc);$('decPanel').classList.toggle('hidden',enc);$('tabEnc').classList.toggle('active',enc);$('tabDec').classList.toggle('active',!enc);clearStatus();}
+$('tabEnc').onclick=function(){tab('enc')};$('tabDec').onclick=function(){tab('dec')};
+document.querySelectorAll('[data-eye]').forEach(function(b){b.onclick=function(){var x=$(b.getAttribute('data-eye'));x.type=x.type==='password'?'text':'password';};});
+['encPin','decPin'].forEach(function(id){$(id).oninput=function(){this.value=this.value.replace(/\D/g,'');};});
+function load(btn,on){busy=on;btn.disabled=on;btn.classList.toggle('busy',on);}
+$('encrypt').onclick=async function(){if(busy)return;clearStatus();var b=this;try{load(b,true);await new Promise(function(r){setTimeout(r,20)});var out=await encryptText($('plain').value,$('encWord').value,$('encPin').value);$('cipherOut').value=out;$('encResult').classList.remove('hidden');setStatus('Зашифровано.','good');}catch(e){setStatus(e.message||'Ошибка шифрования.','bad');}finally{load(b,false);}};
+$('decrypt').onclick=async function(){if(busy)return;clearStatus();var b=this;try{load(b,true);await new Promise(function(r){setTimeout(r,20)});var out=await decryptText($('cipherIn').value,$('decWord').value,$('decPin').value);$('plainOut').value=out;$('decResult').classList.remove('hidden');setStatus('Расшифровано.','good');}catch(e){$('plainOut').value='';$('decResult').classList.add('hidden');setStatus(e.message||'Ошибка расшифрования.','bad');}finally{load(b,false);}};
+async function copy(v){if(!v)throw new Error('Нечего копировать.');if(navigator.clipboard&&navigator.clipboard.writeText){try{await navigator.clipboard.writeText(v);return;}catch(e){}}var t=document.createElement('textarea');t.value=v;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();var ok=document.execCommand('copy');t.remove();if(!ok)throw new Error('Не удалось скопировать.');}
+$('copyCipher').onclick=async function(){try{await copy($('cipherOut').value);setStatus('Скопировано.','good');}catch(e){setStatus(e.message,'bad');}};
+$('copyPlain').onclick=async function(){try{await copy($('plainOut').value);setStatus('Скопировано.','good');}catch(e){setStatus(e.message,'bad');}};
+$('toDecrypt').onclick=function(){$('cipherIn').value=$('cipherOut').value;$('decWord').value=$('encWord').value;$('decPin').value=$('encPin').value;tab('dec');};
+$('clearPlain').onclick=function(){$('plainOut').value='';$('decResult').classList.add('hidden');clearStatus();};
+
+if(location.search.indexOf('selftest=1')!==-1){(async function(){try{var m='Тест Ausfig12 🔐',w='Nebel-Ω-Secret-2026',p='001234567890';var c=await encryptText(m,w,p);var d=await decryptText(c,w,p);if(d!==m)throw new Error('roundtrip');var failed=false;try{await decryptText(c,w,'101234567890')}catch(e){failed=true}if(!failed)throw new Error('wrong pin accepted');$('selftest').textContent='TEST_OK';document.title='TEST_OK';}catch(e){$('selftest').textContent='TEST_FAIL:'+e.message;document.title='TEST_FAIL';}})();}
+
+try{needCrypto();}catch(e){setStatus(e.message,'bad');}
+})();
+</script>
+</body>
+</html>
